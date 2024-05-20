@@ -302,7 +302,14 @@ function loginUser(req, res) {
 // Function to logout a user
 function logoutUser(req, res) {
     // TODO: Destroy session and redirect appropriately
-    req.session.destroy(() => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Failed to destroy session:', err);
+            return res.status(500).send('Failed to logout');
+        }
+        res.clearCookie('connect.sid', {
+            path: '/'
+        });
         res.redirect('/');
     });
     /*
