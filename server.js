@@ -2,7 +2,7 @@ const express = require('express');
 const expressHandlebars = require('express-handlebars');
 const session = require('express-session');
 const canvas = require('canvas');
-
+const { createCanvas } = require('canvas');
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
@@ -97,7 +97,7 @@ app.use(express.json());                            // Parse JSON bodies (as sen
 // template
 //
 app.get('/', (req, res) => {
-    const posts = getPosts(); 
+    const posts = getPosts();
     const user = getCurrentUser(req) || {};
     res.render('home', { posts, user });
 });
@@ -144,14 +144,19 @@ app.post('/posts', (req, res) => {
 });
 app.post('/like/:id', (req, res) => {
     // TODO: Update post likes
+    updatePostLikes(req, res);
+    /*
     const post = posts.find(p => p.id === parseInt(req.params.id));
     const user = getCurrentUser(req);
     if (post && user && post.username !== user.username) {
         post.likes += 1;
-        res.redirect('/');
+        // res.redirect('/');
+        res.json({ success: true });
     } else {
-        res.redirect('/error');
+        // res.redirect('/error');
+        res.json({ success: false, message: 'You cannot like your own post or like while not logged in.' })
     }
+    */
 });
 app.get('/profile', isAuthenticated, (req, res) => {
     // TODO: Render profile page
@@ -240,8 +245,19 @@ function isAuthenticated(req, res, next) {
 // Function to register a user
 function registerUser(req, res) {
     // TODO: Register a new user and redirect appropriately
+    const { username } = req.body;
+    console.log("Attempting to register:", username);
+    if (!findUserByUsername(username)) {
+        const newUser = addUser(username);
+        console.log("Added new user:", username);
+        req.session.userId = newUser.id;
+        req.session.loggedIn = true;
+        res.redirect('/');
+    } else {
+        res.redirect('/register?error=Username+already+exists')
+    }
+    /*
     // Professor Posnett's code from class
-    const username = req.body.username;
     console.log("Attempting to register:", username);
     if (findUserByUsername(username)) {
         // Username already exists
@@ -249,14 +265,25 @@ function registerUser(req, res) {
     } else {
         // Add the new user
         addUser(username);
+        console.log("Added new user:", username);
         res.redirect('/login');
     }
-
+    */
 }
 
 // Function to login a user
 function loginUser(req, res) {
     // TODO: Login a user and redirect appropriately
+    const { username } = req.body;
+    const user = findUserByUsername(username);
+    if (user) {
+        req.session.userId = user.id;
+        req.session.loggedIn = true;
+        res.redirect('/');
+    } else {
+        res.redirect('/login?error=Invalid+username');
+    }
+    /*
     // Login route to regenerate session ID
     // Perform login validation (omitted)
     // Professor Posnett's code from class
@@ -268,12 +295,17 @@ function loginUser(req, res) {
         // Use an identifier rather than sensitive data
         req.session.userId = 'user-id';
         res.send('Logged in successfully');
-    })
+    });
+    */
 }
 
 // Function to logout a user
 function logoutUser(req, res) {
     // TODO: Destroy session and redirect appropriately
+    req.session.destroy(() => {
+        res.redirect('/');
+    });
+    /*
     // Logout route to destroy session
     // Professor Posnett's code from class
     req.session.destroy((err) => {
@@ -283,6 +315,7 @@ function logoutUser(req, res) {
         res.clearCookie('sessionId');
         res.send('Logged out successfully');
     });
+    */
 }
 
 // Function to render the profile page
@@ -296,12 +329,17 @@ function renderProfile(req, res) {
 // Function to update post likes
 function updatePostLikes(req, res) {
     // TODO: Increment post likes if conditions are met
-    const post = posts.find(p => p.id === parseInt(req.params.id));
-    if (post) {
+    const postId = parseInt(req.params.id);
+    const post = posts.find(p => p.id === postId);
+    const user = getCurrentUser(req);
+    if (post && user && post.username !== user.username) {
         post.likes += 1;
         res.redirect('/');
+        // res.json({ success: true });
     } else {
-        res.redirect('/error');
+        // res.redirect('/error');
+        res.redirect('/like?error=Cannot+like+post')
+        // res.json({ success: false, message: 'You cannot like your own post or like while not logged in.' })
     }
 }
 
@@ -331,7 +369,7 @@ function addPost(title, content, user) {
     // TODO: Create a new post object and add to posts array
     const newPost = {
         id: posts.length + 1,
-        title, 
+        title,
         content,
         username: user.username,
         timestamp: new Date().toISOString(),
