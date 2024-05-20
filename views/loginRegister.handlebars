@@ -1,0 +1,38 @@
+{{! Use the main layout }}
+{{!< main }}
+
+<section class="login-register">
+    <section class = "login-area">
+        <h2>Login</h2>
+        <!-- errors will appear here -->
+        {{#if loginError}}
+            <p style="color: red;">{{loginError}}</p>
+        {{/if}}
+        <form action="/login" method="POST">
+            <!-- the login form goes here -->     
+            <div>
+                <label for="login-username">Username:</label>
+                <input type="text" id="login-username" name="username" placeholder="Enter your username" required>
+            </div>   
+            <div>
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+            </div>
+             <button type="submit">Login</button>
+        </form>
+    </section>
+
+    <!-- say --OR-- ... with style -->
+
+    <section class = "register-area">
+        <h2>Register</h2>
+        <!-- errors will appear here -->
+        {{#if regError}}
+            <p style="color: red;">{{regError}}</p>
+        {{/if}}
+        <form action="/register" method="POST">
+            <!-- the registration form goes here -->
+            <button type="submit">Register</button>
+        </form>
+    </section>
+</section>

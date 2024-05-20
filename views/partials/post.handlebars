@@ -1,0 +1,84 @@
+{{! Partial for a single post }}
+<div class="post">
+    <div class="post-avatar">
+        <!-- the user's avatar -->
+    </div>
+    <div class="post-content preserve-newlines">
+        <!-- the post -->
+        <h2>{{this.title}}</h2>
+        <p>{{this.content}}</p>
+        <div class="post-status-bar">
+            <!-- everything that is shown in the status bar -->
+            <!-- Heart = ♥ -->
+            <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
+            {{#ifCond this.username ../user.username}}
+                <!-- Delete button is only shown if the post belongs to the currentser -->
+                <form action="/delete/{{this.id}}" method="POST" class="delete-form">
+                    <button type="submit" class="delete-button" data-id="{{this.id}}"><i class="fas fa-trash-alt"></i></button>"
+                </form>
+            {{else}}
+                <form action="/like/{{this.id}}" method="POST" class="like-form">
+                    <button type="submit" class="like-button" data-id="{{this.id}}" {{#unless ../loggedIn}}disabled{{/unless}}>♥</button> {{this.likes}}</button>
+                </form>
+            {{/ifCond}}
+        </div>        
+    </div>
+</div>
+
+{{#if ../loggedIn}}
+<script>
+
+    function handleLikeClick(event) {
+        const postId = event.target.getAttribute('data-id');
+
+        // you might want to "fetch" something...   
+        // Perform a fetch request to like the post
+        try{
+            const response = await fetch('/like/${postId}', {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                // Reload the page to see the updated like count
+                window.location.reload();
+            } else {
+                console.error('Failed to like the post.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function handleDeleteClick(event) {
+        const buttonElement = event.target.closest('.delete-button');
+        const postId = buttonElement.getAttribute('data-id');        
+
+        // you might want to "fetch" something...        
+        // Perform a fetch request to delete the post
+        try {
+            const response = await fetch(`/delete/${postId}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                // Reload the page to see the post removed
+                window.location.reload();
+            } else {
+                console.error('Failed to delete the post.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }   
+
+    document.querySelectorAll('.like-button').forEach(button => {
+        if (!button.disabled) {
+            button.addEventListener('click', handleLikeClick);
+        }
+    });
+
+    document.querySelectorAll('.delete-button').forEach(button => {
+        button.addEventListener('click', handleDeleteClick);
+    });
+</script>
+{{/if}}
