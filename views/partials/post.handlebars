@@ -25,6 +25,9 @@
         {{likes}} likes</button>
       </form>
     </div>
+    {{#if ../likeError}}
+      <p style="color: red;">{{../likeError}}"</p>
+    {{/if}}
   </div>
 </div>
 
@@ -74,7 +77,8 @@
       });
 
       if (response.ok) {
-        buttonElement.closest('.post').remove();
+        // If response is ok, reoload the page to reflect changes
+        window.location.reload();
       } else {
         alert('Failed to delete the post.');
       }
