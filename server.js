@@ -302,7 +302,7 @@ function addUser(username) {
 
 // Middleware to check if user is authenticated
 function isAuthenticated(req, res, next) {
-    console.log(req.session.userId);
+    // console.log(req.session.userId);
     if (req.session && req.session.userId) {
         next();
     } else {
