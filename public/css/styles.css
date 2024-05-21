@@ -1,0 +1,247 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  header {
+    background-color: #606c38;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+  }
+  
+  .logo h1 {
+    margin: 0 0 0 10px;
+  }
+  
+  .logo img.header-logo {
+    height: 60px;
+    width: auto;
+  }
+  
+  nav ul {
+    display: flex;
+    align-items: center;
+    list-style-type: none;
+    font-size: 1.25em;
+    margin: 0;
+  }
+  
+  nav ul li {
+    margin: 0 10px;
+  }
+  
+  nav a {
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+  
+  nav img.header-avatar {
+    height: 55px;
+    width: auto;
+    margin: 0;
+  }
+  
+  footer {
+    background-color: #606c38;
+    text-align: center;
+    padding: 10px;
+    color: white;
+    margin-top: auto;
+    width: 100%;
+    flex-shrink: 0;
+  }
+  
+  .content-container,
+  .profile-container,
+  .user-posts {
+    align-self: center;
+    padding: 20px;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+  }
+  
+  .user-posts ul {
+    padding-left: 0;
+  }
+  
+  .content-container h1 {
+    text-align: center;
+  }
+  
+  .post {
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    padding: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .posts-list ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+  
+  .container-for-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+  }
+  
+  .login-register {
+    margin: 0;
+    padding: 40px;
+    width: 30%;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .login-register h2 {
+    margin-top: 0;
+    text-align: left;
+  }
+  
+  .login-register form {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+  
+  .login-register form label {
+    margin-bottom: 5px;
+  }
+  
+  .login-register form input {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .login-register form button {
+    padding: 10px 20px;
+    background-color: #606c38;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    align-self: flex-end;
+  }
+  
+  .login-register form button:hover,
+  .post-form .form-actions button:hover {
+    background-color: #283618;
+  }
+  
+  .or-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    font-size: 18px;
+    margin: 20px 0;
+  }
+  
+  .or-divider::before,
+  .or-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .post-form {
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    box-sizing: border-box;
+  }
+  
+  .post-form input[type="text"],
+  .post-form textarea {
+    font-family: sans-serif;
+    font-weight: bold;
+    width: 50%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display: block;
+  }
+  
+  .post-form textarea {
+    box-sizing: border-box;
+    font-weight: normal;
+    width: 100%;
+    margin-right: 20px;
+    resize: none;
+    height: 100px;
+  }
+  
+  .post-form .form-actions button {
+    width: 110px;
+    height: 50px;
+    padding: 15px 30px;
+    font-size: 1.2em;
+    background-color: #606c38;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .post-form .form-actions {
+    text-align: left;
+  }
+  
+  @media (max-width: 800px) {
+    .logo,
+    nav,
+    .user-info {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+  
+    nav ul {
+      flex-direction: column;
+      align-items: center;
+      padding: 0;
+    }
+  
+    nav ul li {
+      display: block;
+      margin-bottom: 5px;
+    }
+  
+    .content-container,
+    .profile-container,
+    .user-posts,
+    .login-register {
+      width: 90%;
+    }
+  }
+  

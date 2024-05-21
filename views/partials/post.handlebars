@@ -13,17 +13,20 @@
             <!-- everything that is shown in the status bar -->
             <!-- Heart = ♥ -->
             <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
-            {{#ifCond username ../user.username}}
-                <!-- Delete button is only shown if the post belongs to the currentser -->
+            {{#ifCond username user.username}}
+                <!-- Delete button is only shown if the post belongs to the
+                current user -->
                 <form action="/delete/{{id}}" method="POST" class="delete-form">
-                    <button type="submit" class="delete-button" data-id="{{id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"></i></button>"
-                </form>
-            {{else}}
-                <form action="/like/{{id}}" method="POST" class="like-form">
-                    <button type="submit" class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)">♥</button> {{likes}}</button>
+                    <button type="submit" class="delete-button" data-id="{{id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"> </i></button>
                 </form>
             {{/ifCond}}
-        </div>        
+            <form action="/like/{{id}}" method="POST" class="like-form">
+                <button type="submit" class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)">♥</button> {{likes}}</button>
+            </form>
+        </div>   
+        {{#if ../likeError}}
+            <p style="color: red;">{{../likeError}}</p>
+        {{/if}} 
     </div>
 </div>
 

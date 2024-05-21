@@ -1,10 +1,10 @@
 {{! Use the main layout }}
 {{!< main }}
-
 {{! New Post Submission Form }}
 <section class="content-container">
     {{#if loggedIn}}
         <!-- show the create post form when logged in -->
+        <h1>Create a New Post</h1>
         <section class="post-form">
             <!-- make a header here -->
             <form action="/posts" method="POST">
@@ -49,79 +49,84 @@
 
 {{! JavaScript for Emoji Integration }}
 <script>
+    console.log('javascript loaded');
+    /*
+    You want to show a subset of the emojis. About 200. However,
+    you also want the user to be able to search all emojis,
+    so, put them in this array when the array is empty so 
+    that you have them.
+    */
 
-/*
- You want to show a subset of the emojis. About 200. However,
- you also want the user to be able to search all emojis,
- so, put them in this array when the array is empty so 
- that you have them.
-*/
+    let allEmojis = [];  // Global list to hold all emojis
 
-let allEmojis = [];  // Global list to hold all emojis
-
-async function fetchEmojis() {
-    try {
-        const response = await fetch('');
-        const emoji = await response.json();
-        allEmojis = emojis;
-        displayEmojis(emojis);
-    } catch (error) {
-        console.error('Failed to fetch emojis:', error);
+    async function fetchEmojis() {
+        console.log('fetch emojis');
+        try {
+            const response = await fetch('https://emoji-api.com/emojis?access_key=4fb07981a933c8917f7aa53524e93eefbba78009');
+            const emojis = await response.json();
+            allEmojis = emojis;
+            displayEmojis(emojis);
+        } catch (error) {
+            console.error('Failed to fetch emojis:', error);
+        }
     }
-}
 
-function toggleEmojiPanel() {
-    const container = document.getElementById('emoji-container');
-    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    function toggleEmojiPanel() {
+        console.log('toggle emoji panel');
+        const container = document.getElementById('emoji-container');
+        container.style.display = container.style.display === 'none' ? 'block' : 'none';
 
-
-    if(container.style.display === 'block' && allEmojis.length == 0){
-        // go "Fetch" you some emojis and show them off with displayEmojis
-        fetchEmojis();
+        if(container.style.display === 'block' && allEmojis.length === 0){
+            // go "Fetch" you some emojis and show them off with displayEmojis
+            console.log('hi');
+            fetchEmojis();
+        }
     }
-}
 
-function displayEmojis(emojis,limit=200) {
-    const container = document.getElementById('emoji-grid');
-    container.innerHTML = '';  // Clear previous results
-    if (Array.isArray(emojis) && emojis.length > 0) {
-        emojis.slice(0, limit).forEach(emoji => {
-            const emojiElement = document.createElement('span');
-            emojiElement.textContent = emoji.character;
-            emojiElement.title = emoji.slug;  // Showing the emoji name on hover
-            emojiElement.style.cursor = 'pointer';
-            emojiElement.onclick = () => insertEmoji(emoji.character);
-            container.appendChild(emojiElement);
-        });
-    } else {
-        container.textContent = 'No emojis found. Try a different search!';
+    function displayEmojis(emojis, limit = 200) {
+        console.log('display emojis');
+        const container = document.getElementById('emoji-grid');
+        container.innerHTML = '';  // Clear previous results
+        if (Array.isArray(emojis) && emojis.length > 0) {
+            emojis.slice(0, limit).forEach(emoji => {
+                const emojiElement = document.createElement('span');
+                emojiElement.textContent = emoji.character;
+                emojiElement.title = emoji.name;  // Showing the emoji name on hover
+                emojiElement.style.cursor = 'pointer';
+                emojiElement.onclick = () => insertEmoji(emoji.htmlCode[0]);
+                container.appendChild(emojiElement);
+            });
+        } else {
+            container.textContent = 'No emojis found. Try a different search!';
+        }
     }
-}
 
-function searchEmojis() {
-    const searchTerm = document.getElementById('emoji-search').value.toLowerCase();
-    // array.filter takes a predicate
-    // use string.includes. 
+    function searchEmojis() {
+        console.log('searching emojis');
+        const searchTerm = document.getElementById('emoji-search').value.toLowerCase();
+        // array.filter takes a predicate
+        // use string.includes. 
 
-    const filteredEmojis = allEmojis.filter(emoji => emoji.slug.toLowerCase().includes(searchTerm));
-    
-    displayEmojis(filteredEmojis);
-}
+        const filteredEmojis = allEmojis.filter(emoji => emoji.name.toLowerCase().includes(searchTerm));
+        
+        displayEmojis(filteredEmojis);
+    }
 
-function insertEmoji(emoji) {
-    // put an emoji on a form somehow. 
+    function insertEmoji(emoji) {
+        console.log('insert emoji');
+        // put an emoji on a form somehow. 
 
-    // do this when you're doing getting the emoji on the form
-    //
+        // do this when you're doing getting the emoji on the form
+        //
 
-    const textarea = document.querySelector('textarea[name="content"]');
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    textarea.value = text.slice(0, start) + emoji + text.slice(end);
-    textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+        const textarea = document.querySelector('textarea[name="content"]');
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        textarea.value = text.slice(0, start) + emoji + text.slice(end);
+        textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
 
-    textarea.focus();  // Keep focus on the textarea
-}
+        textarea.focus();  // Keep focus on the textarea
+    }
 </script>
 

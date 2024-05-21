@@ -99,7 +99,7 @@ app.use(express.json());                            // Parse JSON bodies (as sen
 app.get('/', (req, res) => {
     const posts = getPosts();
     const user = getCurrentUser(req) || {};
-    res.render('home', { posts, user });
+    res.render('home', { posts, user, loggedIn: req.session.loggedIn, likeError: req.query.likeError });
 });
 
 // Register GET route is used for error response from registration
@@ -186,7 +186,7 @@ app.post('/delete/:id', isAuthenticated, (req, res) => {
         posts.splice(postIndex, 1);
         res.redirect('/');
     } else {
-        redirect('/error');
+        res.redirect('/error');
     }
 });
 
@@ -227,7 +227,7 @@ function findUserById(userId) {
 // Function to add a new user
 function addUser(username) {
     // TODO: Create a new user object and add to users array
-    const newUser = { id: users.length + 1, username, avatar_url: undefined, memberSince: new Date().toISOString() };
+    const newUser = { id: users.length + 1, username, avatar_url: undefined, memberSince: formatDate(new Date()) };
     users.push(newUser);
     return newUser;
 }
@@ -235,7 +235,7 @@ function addUser(username) {
 // Middleware to check if user is authenticated
 function isAuthenticated(req, res, next) {
     console.log(req.session.userId);
-    if (req.session.userId) {
+    if (req.session && req.session.userId) {
         next();
     } else {
         res.redirect('/login');
@@ -329,8 +329,12 @@ function logoutUser(req, res) {
 function renderProfile(req, res) {
     // TODO: Fetch user posts and render the profile page
     const user = getCurrentUser(req);
-    const userPosts = posts.filter(post => post.username === user.username);
-    res.render('profile', { user, posts: userPosts });
+    if (user) {
+        const userPosts = posts.filter(post => post.username === user.username);
+        res.render('profile', { user, posts: userPosts });
+    } else {
+        res.redirect('/login');
+    }
 }
 
 // Function to update post likes
@@ -345,7 +349,7 @@ function updatePostLikes(req, res) {
         // res.json({ success: true });
     } else {
         // res.redirect('/error');
-        res.redirect('/like?error=Cannot+like+post')
+        res.redirect('/?likeError=Cannot+like+post');
         // res.json({ success: false, message: 'You cannot like your own post or like while not logged in.' })
     }
 }
@@ -371,15 +375,25 @@ function getPosts() {
     return posts.slice().reverse();
 }
 
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
 // Function to add a new post
 function addPost(title, content, user) {
     // TODO: Create a new post object and add to posts array
+
     const newPost = {
         id: posts.length + 1,
         title,
         content,
         username: user.username,
-        timestamp: new Date().toISOString(),
+        timestamp: formatDate(new Date()),
         likes: 0
     };
     posts.push(newPost);
