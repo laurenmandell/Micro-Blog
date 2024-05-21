@@ -142,7 +142,8 @@ body {
     border-radius: 4px;
   }
   
-  .login-register form button {
+  .login-register form button,
+  .post-status-bar form button {
     padding: 10px 20px;
     background-color: #606c38;
     color: white;
@@ -151,10 +152,28 @@ body {
     cursor: pointer;
     align-self: flex-end;
   }
+
+  .post-status-bar form button {
+    width: 60px;
+    height: 40px;
+  }
+
+  .like-button {
+    font-size: 1.3em;
+  }
   
   .login-register form button:hover,
-  .post-form .form-actions button:hover {
+  .post-form .form-actions button:hover,
+  .post-status-bar form button:hover {
     background-color: #283618;
+  }
+
+  .form-actions,
+  .post-status-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
   }
   
   .or-divider {

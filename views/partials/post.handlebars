@@ -1,88 +1,86 @@
 {{! Partial for a single post }}
 <div class="post">
-    <div class="post-avatar">
-        <!-- the user's avatar -->
-        <img src="/avatar/{{username}}" alt="User Avatar" class="post-avatar">
+  <div class="post-avatar">
+    <!-- the user's avatar -->
+    <img src="/avatar/{{username}}" alt="User Avatar" class="post-avatar">
+  </div>
+  <div class="post-content preserve-newlines">
+    <!-- the post -->
+    <h2>{{title}}</h2>
+    <p>{{content}}</p>
+    <p class="post-meta">Posted by {{username}} on {{timestamp}}</p>
+    <div class="post-status-bar">
+      <!-- everything that is shown in the status bar -->
+      <!-- Heart = ♥ -->
+      <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
+      {{#ifCond username user.username}}
+      <!-- Delete button is only shown if the post belongs to the currentser -->
+      <form action="/delete/{{id}}" method="POST" class="delete-form">
+        <button type="submit" class="delete-button" data-id="{{id}}" onclick="handleDeleteClick(event)"><i
+            class="fas fa-trash-alt"></i></button>
+      </form>
+      {{/ifCond}}
+      <form action="/like/{{id}}" method="POST" class="like-form">
+        <button type="submit" class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)">♥</button>
+        {{likes}}</button>
+      </form>
     </div>
-    <div class="post-content preserve-newlines">
-        <!-- the post -->
-        <h2>{{title}}</h2>
-        <p>{{content}}</p>
-        <p class="post-meta">Posted by {{username}} on {{timestamp}}</p>
-        <div class="post-status-bar">
-            <!-- everything that is shown in the status bar -->
-            <!-- Heart = ♥ -->
-            <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
-            {{#ifCond username user.username}}
-                <!-- Delete button is only shown if the post belongs to the
-                current user -->
-                <form action="/delete/{{id}}" method="POST" class="delete-form">
-                    <button type="submit" class="delete-button" data-id="{{id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"> </i></button>
-                </form>
-            {{/ifCond}}
-            <form action="/like/{{id}}" method="POST" class="like-form">
-                <button type="submit" class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)">♥</button> {{likes}}</button>
-            </form>
-        </div>   
-        {{#if ../likeError}}
-            <p style="color: red;">{{../likeError}}</p>
-        {{/if}} 
-    </div>
+  </div>
 </div>
 
 {{#if ../loggedIn}}
 <script>
 
-    async function handleLikeClick(event) {
-        const postId = event.target.getAttribute('data-id');
+  async function handleLikeClick(event) {
+    const postId = event.target.getAttribute('data-id');
 
-        // you might want to "fetch" something...   
-        // Perform a fetch request to like the post
-        try{
-            const response = await fetch('/like/${postId}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            const result = await response.json();
-
-            if (response.success) {
-                // Update the like count on the page
-                const likesElement = event.target.closest('.post-status-bar').querySelector('.likes');
-                const likesCount = parseInt(likesElement.textContent) + 1;
-                likesElement.textContent = '${likesCount} ♥';
-            } else {
-                alert(result.message);
-            }
-        } catch (error) {
-            console.error('Error liking the post:', error);
+    // you might want to "fetch" something...
+    // Perform a fetch request to like the post
+    try {
+      const response = await fetch('/like/${postId}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         }
+      });
+
+      const result = await response.json();
+
+      if (response.success) {
+        // Update the like count on the page
+        const likesElement = event.target.closest('.post-status-bar').querySelector('.likes');
+        const likesCount = parseInt(likesElement.textContent) + 1;
+        likesElement.textContent = '${likesCount} ♥';
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      console.error('Error liking the post:', error);
     }
+  }
 
-    async function handleDeleteClick(event) {
-        const buttonElement = event.target.closest('.delete-button');
-        const postId = buttonElement.getAttribute('data-id');        
+  async function handleDeleteClick(event) {
+    const buttonElement = event.target.closest('.delete-button');
+    const postId = buttonElement.getAttribute('data-id');
 
-        // you might want to "fetch" something...        
-        // Perform a fetch request to delete the post
-        try {
-            const response = await fetch(`/delete/${postId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                buttonElement.closest('.post').remove();
-            } else {
-                alert('Failed to delete the post.');
-            }
-        } catch (error) {
-            console.error('Error deleting the post:', error);
+    // you might want to "fetch" something...
+    // Perform a fetch request to delete the post
+    try {
+      const response = await fetch(`/delete/${postId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         }
-    }   
+      });
+
+      if (response.ok) {
+        buttonElement.closest('.post').remove();
+      } else {
+        alert('Failed to delete the post.');
+      }
+    } catch (error) {
+      console.error('Error deleting the post:', error);
+    }
+  }
 </script>
 {{/if}}

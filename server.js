@@ -76,7 +76,7 @@ app.use(
 // should be used in your template files. 
 // 
 app.use((req, res, next) => {
-    res.locals.appName = 'MicroBlog';
+    res.locals.appName = 'PoemBlog';
     res.locals.copyrightYear = 2024;
     res.locals.postNeoType = 'Post';
     res.locals.loggedIn = req.session.loggedIn || false;
@@ -202,15 +202,83 @@ app.listen(PORT, () => {
 // Support Functions and Variables
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-// Example data for posts and users
+// Starting data for posts and users
 let posts = [
-    { id: 1, title: 'Sample Post', content: 'This is a sample post.', username: 'SampleUser', timestamp: '2024-01-01 10:00', likes: 0 },
-    { id: 2, title: 'Another Post', content: 'This is another sample post.', username: 'AnotherUser', timestamp: '2024-01-02 12:00', likes: 0 },
+    {
+        id: 1,
+        title: 'Whispers of the Wind',
+        content: 'In the hush of twilight\'s embrace,\nWhispers of the wind take flight.\nThrough the trees, they softly trace,\nA symphony of the night.',
+        username: 'PoetLover',
+        timestamp: '2024-01-01 10:00',
+        likes: 0
+    },
+    {
+        id: 2,
+        title: 'Reflections of Time',
+        content: 'Upon the lake of memory,\nTime casts its gentle ripples wide.\nEach moment, a fleeting reverie,\nReflects the paths we stride.',
+        username: 'VerseSeeker',
+        timestamp: '2024-01-02 12:00',
+        likes: 0
+    },
+    {
+        id: 3,
+        title: 'Echoes of the Past',
+        content: 'In ancient halls of silent stone,\nEchoes of the past remain.\nWhispering tales of the unknown,\nIn a soft, eternal refrain.',
+        username: 'HistoryScribe',
+        timestamp: '2024-01-03 14:30',
+        likes: 0
+    },
+    {
+        id: 4,
+        title: 'Moonlit Dreams',
+        content: 'Beneath the moon\'s gentle glow,\nDreams unfold in silver light.\nIn the stillness, shadows grow,\nWeaving tales into the night.',
+        username: 'NightMuse',
+        timestamp: '2024-01-04 09:45',
+        likes: 0
+    },
+    {
+        id: 5,
+        title: 'Serenade of the Stars',
+        content: 'Stars above in their celestial dance,\nSing a song of endless night.\nIn their glow, our hearts enhance,\nA serenade of pure delight.',
+        username: 'CelestialBard',
+        timestamp: '2024-01-05 18:20',
+        likes: 0
+    }
 ];
+
 let users = [
-    { id: 1, username: 'SampleUser', avatar_url: undefined, memberSince: '2024-01-01 08:00' },
-    { id: 2, username: 'AnotherUser', avatar_url: undefined, memberSince: '2024-01-02 09:00' },
+    {
+        id: 1,
+        username: 'PoetLover',
+        avatar_url: undefined, // You can specify an avatar URL if available
+        memberSince: '2024-01-01 08:00'
+    },
+    {
+        id: 2,
+        username: 'VerseSeeker',
+        avatar_url: undefined, // You can specify an avatar URL if available
+        memberSince: '2024-01-02 09:00'
+    },
+    {
+        id: 3,
+        username: 'HistoryScribe',
+        avatar_url: undefined, // You can specify an avatar URL if available
+        memberSince: '2024-01-03 10:30'
+    },
+    {
+        id: 4,
+        username: 'NightMuse',
+        avatar_url: undefined, // You can specify an avatar URL if available
+        memberSince: '2024-01-04 11:45'
+    },
+    {
+        id: 5,
+        username: 'CelestialBard',
+        avatar_url: undefined, // You can specify an avatar URL if available
+        memberSince: '2024-01-05 13:20'
+    }
 ];
+
 
 // Function to find a user by username
 function findUserByUsername(username) {
