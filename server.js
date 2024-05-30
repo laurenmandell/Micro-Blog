@@ -64,6 +64,9 @@ app.engine(
         }
         return options.inverse(this);
       },
+      isUndefined: function (value) {
+        return typeof value === "undefined";
+      },
     },
   }),
 );
@@ -113,10 +116,13 @@ passport.use(
     async (token, tokenSecret, profile, done) => {
       try {
         const hashedGoogleId = hashGoogleId(profile.id);
-        let user = await findUserByHashedGoogleId(hashedGoogleId);
+        let user = await findUserBy("hashedGoogleId", hashedGoogleId);
+        let needsToSetUsername = await findUserBy("username", hashedGoogleId);
         if (!user) {
           const userId = await createUser(hashedGoogleId);
-          user = await findUserByUserId(userId);
+          user = await findUserBy("id", userId);
+          user.isNewUser = true;
+        } else if (needsToSetUsername) {
           user.isNewUser = true;
         } else {
           user.isNewUser = false;
@@ -137,7 +143,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((obj, done) => {
-  findUserByHashedGoogleId(obj.hashedGoogleId)
+  findUserBy("hashedGoogleId", obj.hashedGoogleId)
     .then((user) => {
       user.isNewUser = obj.isNewUser; // Attach isNewUser property
       done(null, user);
@@ -175,7 +181,7 @@ function registerRoutes() {
     try {
       const sortCriteria = req.query.sort || "recency-desc";
       const posts = await getPosts(sortCriteria);
-      const user = await findUserByUserId(req.session.userId);
+      const user = await findUserBy("id", req.session.userId);
       res.render("home", {
         posts,
         user,
@@ -185,7 +191,7 @@ function registerRoutes() {
       });
     } catch (error) {
       console.error("Error fetching posts:", error);
-      res.status(500).send("Error fetching posts");
+      res.redirect("/error");
     }
   });
 
@@ -223,7 +229,7 @@ function registerRoutes() {
     const { username } = req.body;
     const hashedGoogleId = req.session.passport.user.hashedGoogleId;
     try {
-      const existingUser = await findUserByUsername(username);
+      const existingUser = await findUserBy("username", username);
       if (existingUser) {
         res.redirect("/registerUsername?error=Username+already+exists");
       } else {
@@ -232,7 +238,7 @@ function registerRoutes() {
       }
     } catch (error) {
       console.error("Error registering user:", error);
-      res.status(500).send("Error registering user");
+      res.redirect("/error");
     }
   });
 
@@ -274,14 +280,14 @@ function registerRoutes() {
       }
     } catch (error) {
       console.error("Error fetching post:", error);
-      res.status(500).send("Error fetching post");
+      res.redirect("/error");
     }
   });
 
   app.post("/posts", async (req, res) => {
     // Add a new post and redirect to home
     const { title, content } = req.body;
-    const user = await findUserByUserId(req.session.userId);
+    const user = await findUserBy("id", req.session.userId);
 
     if (user) {
       const timestamp = new Date().toISOString().slice(0, 16).replace("T", " ");
@@ -293,7 +299,7 @@ function registerRoutes() {
         res.redirect("/");
       } catch (error) {
         console.error("Error creating post:", error);
-        res.status(500).send("Error creating post");
+        res.redirect("/error");
       }
     } else {
       res.redirect("/login");
@@ -303,7 +309,7 @@ function registerRoutes() {
   app.post("/like/:id", async (req, res) => {
     try {
       const post = await getPostById(req.params.id);
-      const user = await findUserByUserId(req.session.userId);
+      const user = await findUserBy("id", req.session.userId);
       if (post && user && post.username !== user.username) {
         await db.run("UPDATE posts SET likes = likes + 1 WHERE id = ?", [
           req.params.id,
@@ -323,14 +329,14 @@ function registerRoutes() {
       }
     } catch (error) {
       console.error("Error liking post:", error);
-      res.status(500).send("Error liking post");
+      res.redirect("/error");
     }
   });
 
   app.get("/profile", isAuthenticated, async (req, res) => {
     // Render profile page
     try {
-      const user = await findUserByUserId(req.session.userId);
+      const user = await findUserBy("id", req.session.userId);
       if (user) {
         const sortCriteria = req.query.sort || "recency-desc";
         const userPosts = await getUserPosts(user.username, sortCriteria);
@@ -340,7 +346,7 @@ function registerRoutes() {
       }
     } catch (error) {
       console.error("Error fetching user profile:", error);
-      res.status(500).send("Error fetching user profile");
+      res.redirect("/error");
     }
   });
   app.get("/avatar/:username", (req, res) => {
@@ -351,7 +357,7 @@ function registerRoutes() {
     // Delete a post if the current user is the owner
     try {
       const post = await getPostById(req.params.id);
-      const user = await findUserByUserId(req.session.userId);
+      const user = await findUserBy("id", req.session.userId);
       if (post && user && post.username === user.username) {
         await db.run("DELETE FROM posts WHERE id = ?", [req.params.id]);
         const referer = req.headers.referer;
@@ -365,7 +371,24 @@ function registerRoutes() {
       }
     } catch (error) {
       console.error("Error deleting post:", error);
-      res.status(500).send("Error deleting post");
+      res.redirect("/error");
+    }
+  });
+
+  // Emoji API route
+  app.get("/api/emojis", async (req, res) => {
+    try {
+      const response = await fetch(
+        `https://emoji-api.com/emojis?access_key=${process.env.EMOJI_KEY}`,
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching emojis:", error);
+      res.redirect("/error");
     }
   });
 }
@@ -412,21 +435,6 @@ function isAuthenticated(req, res, next) {
   }
 }
 
-// Function to logout a user
-function logoutUser(req, res) {
-  // Destroy session and redirect appropriately
-  req.session.destroy((err) => {
-    if (err) {
-      console.error("Failed to destroy session:", err);
-      return res.status(500).send("Failed to logout");
-    }
-    res.clearCookie("connect.sid", {
-      path: "/",
-    });
-    res.redirect("/");
-  });
-}
-
 // Function to handle avatar generation and serving
 function handleAvatar(req, res) {
   // Generate and serve the user's avatar image
@@ -465,37 +473,14 @@ function generateAvatar(letter, width = 100, height = 100) {
   return canvas.toBuffer("image/png");
 }
 
-// Function to find a user by username
-async function findUserByUsername(username) {
+// Function to find a user by a certain field
+async function findUserBy(field, value) {
+  const query = `SELECT * FROM users WHERE ${field} = ?`;
   return new Promise((resolve, reject) => {
-    db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
+    db.get(query, [value], (err, row) => {
       if (err) reject(err);
       else resolve(row);
     });
-  });
-}
-
-// Function to find a user by UserId
-async function findUserByUserId(userId) {
-  return new Promise((resolve, reject) => {
-    db.get("SELECT * FROM users WHERE id = ?", [userId], (err, row) => {
-      if (err) reject(err);
-      else resolve(row);
-    });
-  });
-}
-
-// Function to find a user by hashedGoogleId
-async function findUserByHashedGoogleId(hashedGoogleId) {
-  return new Promise((resolve, reject) => {
-    db.get(
-      "SELECT * FROM users WHERE hashedGoogleId = ?",
-      [hashedGoogleId],
-      (err, row) => {
-        if (err) reject(err);
-        else resolve(row);
-      },
-    );
   });
 }
 
@@ -505,7 +490,7 @@ async function createUser(hashedGoogleId) {
   return new Promise((resolve, reject) => {
     db.run(
       "INSERT INTO users (username, hashedGoogleId, memberSince) VALUES (?, ?, ?)",
-      ["newUser", hashedGoogleId, memberSince],
+      [hashedGoogleId, hashedGoogleId, memberSince],
       function (err) {
         if (err) reject(err);
         else resolve(this.lastID);
