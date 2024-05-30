@@ -30,6 +30,17 @@
 
   <h1>Recent Posts</h1>
 
+  <form action="/" method="GET" class="sort-container">
+    <label for="sortPosts">Sort by:</label>
+    <select class="sortPosts" name="sort" onchange="this.form.submit()">
+      <option value="recency-desc" {{#ifCond sort 'recency-desc' }}selected{{/ifCond}}>Recency: New to Old</option>
+      <option value="recency-asc" {{#ifCond sort 'recency-asc' }}selected{{/ifCond}}>Recency: Old to New</option>
+      <option value="likes-desc" {{#ifCond sort 'likes-desc' }}selected{{/ifCond}}>Number of Likes: High to Low</option>
+      <option value="likes-asc" {{#ifCond sort 'likes-asc' }}selected{{/ifCond}}>Number of Likes: Low to High</option>
+    </select>
+  </form>
+
+
   <section class="posts-list">
     <!-- recent posts -->
 

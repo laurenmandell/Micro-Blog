@@ -1,32 +1,41 @@
 {{! Use the main layout }}
-{{!< main }}
+{{!< main }} <div class="profile-container">
+  <div class="profile-avatar">
+    <!-- Correct path for the default avatar image -->
+    <img src="/avatar/{{user.username}}" alt="User Avatar">
+  </div>
 
-<div class="profile-container">
-    <div class="profile-avatar">
-        <!-- Correct path for the default avatar image -->
-        <img src="/avatar/{{user.username}}" alt="User Avatar">
-    </div>
-    
-    <section class="profile-info">
-        <!-- user profile info -->
-        <h2>{{user.username}}'s Profile</h2>
-        <p>Member since: {{user.memberSince}}</p>
-    </section>
-</div>
+  <section class="profile-info">
+    <!-- user profile info -->
+    <h2>{{user.username}}'s Profile</h2>
+    <p>Member since: {{user.memberSince}}</p>
+  </section>
+  </div>
 
-<section class="user-posts">
+  <section class="user-posts">
     <!-- you can call posts tweets, or truths, or whatever, these are neologisms. Choose your own new in server.js -->
     <h2>Your {{{postNeoType}}}s</h2>
-    
+
+    <form action="/profile" method="GET" class="sort-container">
+      <label for="sortPosts">Sort by:</label>
+      <select class="sortPosts" name="sort" onchange="this.form.submit()">
+        <option value="recency-desc" {{#ifCond sort 'recency-desc' }}selected{{/ifCond}}>Recency: New to Old</option>
+        <option value="recency-asc" {{#ifCond sort 'recency-asc' }}selected{{/ifCond}}>Recency: Old to New</option>
+        <option value="likes-desc" {{#ifCond sort 'likes-desc' }}selected{{/ifCond}}>Number of Likes: High to Low
+        </option>
+        <option value="likes-asc" {{#ifCond sort 'likes-asc' }}selected{{/ifCond}}>Number of Likes: Low to High</option>
+      </select>
+    </form>
+
     <!-- you'll need to make this conditaionl and #each expression work -->
     {{#if posts.length}}
-        <ul>
-            {{#each posts}}
-                {{> post this user=../user}}
-            {{/each}}
-        </ul>
+    <ul>
+      {{#each posts}}
+      {{> post this user=../user}}
+      {{/each}}
+    </ul>
     {{else}}
-        <!-- fix this up with some helper functions and other handlebars expressions, or add you own character -->
-        <p>You have not posted yet, poster.</p>
+    <!-- fix this up with some helper functions and other handlebars expressions, or add you own character -->
+    <p>You have not posted yet, poster.</p>
     {{/if}}
-</section>
+  </section>

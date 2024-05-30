@@ -2,39 +2,11 @@
 {{!< main }}
 <section class="container-for-login">
 <section class="login-register">
-    <section class = "login-area">
-        <h2>Login</h2>
-        <!-- errors will appear here -->
-        {{#if loginError}}
-            <p style="color: red;">{{loginError}}</p>
-        {{/if}}
-        <form action="/login" method="POST">
-            <!-- the login form goes here -->     
-            <div>
-                <label for="login-username">Username:</label>
-                <input type="text" id="login-username" name="username" placeholder="Enter your username" required>
-            </div>  
-             <button type="submit">Login</button>
-        </form>
-    </section>
-
-    <!-- say --OR-- ... with style -->
-    <p class="or-divider">OR</p>
-
-    <section class = "register-area">
-        <h2>Register</h2>
-        <!-- errors will appear here -->
-        {{#if regError}}
-            <p style="color: red;">{{regError}}</p>
-        {{/if}}
-        <form action="/register" method="POST">
-            <!-- the registration form goes here -->
-            <div>
-                <label for="register-username">Username:</label>
-                <input type="text" id="register-username" name ="username" placeholder="Choose a username" required>
-            </div>
-            <button type="submit">Register</button>
-        </form>
-    </section>
+  <section class="login-area">
+    <h2>Login with Google</h2>
+    <form action="/auth/google" method="get">
+      <button type="submit">Login with Google</button>
+    </form>
+  </section>
 </section>
 </section>
