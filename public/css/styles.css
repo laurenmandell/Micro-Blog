@@ -6,6 +6,9 @@ body {
   flex-direction: column;
   min-height: 100vh;
   overflow-x: hidden;
+  background-image: url("../images/background.png");
+  background-size: cover;
+  background-position: center;
 }
 
 header {
@@ -89,6 +92,7 @@ footer {
 }
 
 .post {
+  background: white;
   border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   padding: 20px;
@@ -163,8 +167,7 @@ footer {
   border-radius: 4px;
 }
 
-.login-register form button,
-.post-status-bar form button {
+button {
   padding: 10px 20px;
   background-color: #606c38;
   color: white;
@@ -174,34 +177,69 @@ footer {
   align-self: flex-end;
 }
 
+button:hover {
+  background-color: #283618;
+}
+
+.cancel-delete-button,
+.confirm-delete-button {
+  width: 60px;
+  height: 40px;
+}
+
+.cancel-delete-button,
+.cancel-edit-button {
+  background-color: white;
+  color: #606c38;
+  border: 2px solid #606c38;
+}
+
+.cancel-delete-button:hover,
+.cancel-edit-button:hover {
+  background-color: #d1e7d1;
+}
+
+.delete-account-button,
+.confirm-delete-button {
+  background-color: #da2533;
+}
+
+.delete-account-button:hover,
+.confirm-delete-button:hover {
+  background-color: #971923;
+}
+
+.confirm-delete {
+  display: none;
+}
+
 .login-area {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.post-status-bar form button {
+.post-status-bar button {
   width: 60px;
   height: 40px;
 }
 
-
-.like-button {
-  font-size: 1.3em;
-}
-
-.login-register form button:hover,
-.post-form .form-actions button:hover,
-.post-status-bar form button:hover {
-  background-color: #283618;
-}
-
-.form-actions,
+.like-form,
 .post-status-bar {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 10px;
+}
+
+.right-aligned {
+  gap: 10px;
+  margin-left: auto;
+}
+
+.right-aligned button {
+  width: 100px;
+  text-align: center;
 }
 
 .or-divider {
@@ -262,10 +300,12 @@ footer {
 
 .post-form .form-actions {
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 @media (max-width: 800px) {
-
   .logo,
   nav,
   .user-info {

@@ -13,17 +13,17 @@
       <textarea name="content" placeholder="What's on your mind?" required></textarea>
 
       <div class="form-actions">
-        <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button>
+        <button type="button" class="emoji-button" onclick="toggleEmojiPanel(event)">😀</button>
         <button type="submit" class="post-button">Post</button>
       </div>
     </form>
 
-    <div id="emoji-container" class="emoji-panel" style="display: none;">
+    <div class="emoji-container emoji-panel" style="display: none;">
       <!-- input field for the emoji search, use
                 oninput="searchEmojis() -->
-      <input type="text" id="emoji-search" placeholder="Search emojis..." oninput="searchEmojis()">
+      <input type="text" class="emoji-search" placeholder="Search emojis..." oninput="searchEmojis(event)">
       <!-- a div, id = "emoji-grid" -->
-      <div id="emoji-grid"></div>
+      <div class="emoji-grid"></div>
     </div>
   </section>
   {{/if}}
@@ -71,30 +71,44 @@
 
     let allEmojis = [];  // Global list to hold all emojis
 
-    async function fetchEmojis() {
+    async function fetchEmojis(event) {
       try {
         const response = await fetch('/api/emojis');
         const emojis = await response.json();
         allEmojis = emojis
-        displayEmojis(emojis);
+        displayEmojis(event, emojis);
       } catch (error) {
         console.error('Failed to fetch emojis', error);
       }
     }
 
-    function toggleEmojiPanel() {
-      const container = document.getElementById('emoji-container');
+    function toggleEmojiPanel(event) {
+      function findEmojiContainer(element) {
+        let parent = element.closest('.post-form');
+        if (parent) {
+          return parent.querySelector('.emoji-container');
+        }
+        return null;
+      }
+      const container = findEmojiContainer(event.target);
       container.style.display = container.style.display === 'none' ? 'block' : 'none';
 
 
       if (container.style.display === 'block' && allEmojis.length == 0) {
         // go "Fetch" you some emojis and show them off with displayEmojis
-        fetchEmojis();
+        fetchEmojis(event);
       }
     }
 
-    function displayEmojis(emojis, limit = 200) {
-      const container = document.getElementById('emoji-grid');
+    function displayEmojis(event, emojis, limit = 200) {
+      function findEmojiGrid(element) {
+        let parent = element.closest('.post-form');
+        if (parent) {
+          return parent.querySelector('.emoji-grid');
+        }
+        return null;
+      }
+      const container = findEmojiGrid(event.target);
       container.innerHTML = '';  // Clear previous results
       if (Array.isArray(emojis) && emojis.length > 0) {
         emojis.slice(0, limit).forEach(emoji => {
@@ -104,7 +118,7 @@
           emojiElement.style.cursor = 'pointer';
           emojiElement.style.fontSize = '24px';
           emojiElement.style.margin = '5px';
-          emojiElement.onclick = () => insertEmoji(emoji.character);
+          emojiElement.onclick = () => insertEmoji(event, emoji.character);
           container.appendChild(emojiElement);
         });
       } else {
@@ -112,23 +126,38 @@
       }
     }
 
-    function searchEmojis() {
-      const searchTerm = document.getElementById('emoji-search').value.toLowerCase();
+    function searchEmojis(event) {
+      function findEmojiSearch(element) {
+        let parent = element.closest('.post-form');
+        if (parent) {
+          return parent.querySelector('.emoji-search');
+        }
+        return null;
+      }
+      const searchTerm =
+        findEmojiSearch(event.target).value.toLowerCase();
       // array.filter takes a predicate
       // use string.includes.
 
       const filteredEmojis = allEmojis.filter(emoji => emoji.slug.toLowerCase().includes(searchTerm));
 
-      displayEmojis(filteredEmojis);
+      displayEmojis(event, filteredEmojis);
     }
 
-    function insertEmoji(emoji) {
+    function insertEmoji(event, emoji) {
       // put an emoji on a form somehow.
 
       // do this when you're doing getting the emoji on the form
       //
+      function findTextArea(element) {
+        let parent = element.closest('.post-form');
+        if (parent) {
+          return parent.querySelector('textarea');
+        }
+        return null;
+      }
+      const textarea = findTextArea(event.target);
 
-      const textarea = document.querySelector('textarea[name="content"]');
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const text = textarea.value;

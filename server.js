@@ -145,8 +145,12 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser((obj, done) => {
   findUserBy("hashedGoogleId", obj.hashedGoogleId)
     .then((user) => {
-      user.isNewUser = obj.isNewUser; // Attach isNewUser property
-      done(null, user);
+      if (user) {
+        user.isNewUser = obj.isNewUser; // Attach isNewUser property
+        done(null, user);
+      } else {
+        done(new Error("User not found"));
+      }
     })
     .catch((err) => done(err));
 });
@@ -293,8 +297,8 @@ function registerRoutes() {
       const timestamp = new Date().toISOString().slice(0, 16).replace("T", " ");
       try {
         await db.run(
-          "INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)",
-          [title, content, user.username, timestamp, 0],
+          "INSERT INTO posts (title, content, username, timestamp, likes, isEdited) VALUES (?, ?, ?, ?, ?, ?)",
+          [title, content, user.username, timestamp, 0, 0],
         );
         res.redirect("/");
       } catch (error) {
@@ -306,6 +310,34 @@ function registerRoutes() {
     }
   });
 
+  app.put("/edit/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { title, content } = req.body;
+      const timestamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+      const post = await getPostById(req.params.id);
+      const user = await findUserBy("id", req.session.userId);
+      if (post && user && post.username === user.username) {
+        await db.run(
+          "UPDATE posts SET title = ?, content = ?, timestamp = ?, isEdited = ? WHERE id = ?",
+          [title, content, timestamp, 1, req.params.id],
+          function (err) {
+            if (err) {
+              console.error("Error updating post:", err);
+              res.redirect("/error");
+            } else {
+              res.status(200).json({ message: "Post edited successfully" });
+            }
+          },
+        );
+      } else {
+        res.redirect("/error");
+      }
+    } catch (error) {
+      console.error("Error editing post:", error);
+      res.redirect("/error");
+    }
+  });
+
   app.post("/like/:id", async (req, res) => {
     try {
       const post = await getPostById(req.params.id);
@@ -314,18 +346,11 @@ function registerRoutes() {
         await db.run("UPDATE posts SET likes = likes + 1 WHERE id = ?", [
           req.params.id,
         ]);
-        res.redirect("back"); // Redirect back to the referring page
+        res.status(200).json({ message: "Post liked successfully" });
       } else {
-        const referer = req.headers.referer;
-        if (referer) {
-          res.redirect(
-            `${referer}?likeError=You cannot like your own post or like while not logged in.`,
-          );
-        } else {
-          res.redirect(
-            "/?likeError=You cannot like your own post or like while not logged in.",
-          );
-        }
+        res.status(403).json({
+          message: "You cannot like posts while not logged in.",
+        });
       }
     } catch (error) {
       console.error("Error liking post:", error);
@@ -349,6 +374,7 @@ function registerRoutes() {
       res.redirect("/error");
     }
   });
+
   app.get("/avatar/:username", (req, res) => {
     // Serve the avatar image for the user
     handleAvatar(req, res);
@@ -360,17 +386,36 @@ function registerRoutes() {
       const user = await findUserBy("id", req.session.userId);
       if (post && user && post.username === user.username) {
         await db.run("DELETE FROM posts WHERE id = ?", [req.params.id]);
-        const referer = req.headers.referer;
-        if (referer && referer.includes("/profile")) {
-          res.redirect("/profile");
-        } else {
-          res.redirect("/");
-        }
+        res.status(200).json({ message: "Post deleted successfully" });
       } else {
         res.redirect("/error");
       }
     } catch (error) {
       console.error("Error deleting post:", error);
+      res.redirect("/error");
+    }
+  });
+
+  app.delete("/deleteAccount", isAuthenticated, async (req, res) => {
+    try {
+      const user = await findUserBy("id", req.session.userId);
+
+      // Delete all user's posts
+      await db.run("DELETE FROM posts WHERE username = ?", [user.username]);
+
+      // Delete the user's account
+      await db.run("DELETE FROM users WHERE username = ?", [user.username]);
+
+      // Destroy session
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error destroying session:", err);
+          return res.status(500).json({ message: "Error destroying session" });
+        }
+        res.status(200).json({ message: "Account deleted successfully" });
+      });
+    } catch (error) {
+      console.error("Error deleting account:", error);
       res.redirect("/error");
     }
   });
@@ -454,7 +499,15 @@ function generateAvatar(letter, width = 100, height = 100) {
   // 3. Draw the background color
   // 4. Draw the letter in the center
   // 5. Return the avatar as a PNG buffer
-  const colors = ["#FF5733", "#33FF57", "#3357FF", "#F033FF", "#FF33A6"];
+  const colors = [
+    "#B59D3A",
+    "#BF5F50",
+    "#4CA3A3",
+    "#B886BA",
+    "#D16A47",
+    "#A7A37E",
+    "#6D7993",
+  ];
   const backgroundColor = colors[letter.charCodeAt(0) % colors.length];
   const canvas = createCanvas(width, height);
   const context = canvas.getContext("2d");

@@ -6,41 +6,60 @@
   </div>
   <div class="post-content preserve-newlines">
     <!-- the post -->
-    <h2>{{title}}</h2>
-    <p>{{content}}</p>
-    <p class="post-meta">Posted by {{username}} on {{timestamp}}</p>
+    <form class="post-feed-form">
+      <h2 class="post-title">{{title}}</h2>
+      <p class="post-content-body">{{content}}</p>
+    </form>
+    <p class="post-meta" data-username="{{username}}">
+      {{#ifCond isEdited 0}}
+      Posted
+      {{else}}
+      Edited
+      {{/ifCond}}
+      by {{username}} on {{timestamp}}</p>
+      {{#ifCond username user.username}}
+        <p class="likes">{{likes}} likes</p>
+      {{/ifCond}}
     <div class="post-status-bar">
       <!-- everything that is shown in the status bar -->
       <!-- Heart = ♥ -->
       <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
       {{#ifCond username user.username}}
       <!-- Delete button is only shown if the post belongs to the currentser -->
-      <form action="/delete/{{id}}" method="POST" class="delete-form">
+      <div class="delete-form">
         <button type="submit" class="delete-button" data-id="{{id}}" onclick="handleDeleteClick(event)"><i
             class="fas fa-trash-alt"></i></button>
-      </form>
+      </div>
+      <div class="edit-form">
+        <button type="submit" class="edit-button" data-id="{{id}}" onclick="handleEditClick(event)"><i
+            class="fa-solid fa-pencil"></i>
+        </button>
+      </div>
+      <div class="right-aligned" style="display: none">
+        <button class="cancel-edit-button" onclick="handleCancelClick(event)">Cancel</button>
+        <button class="done-edit-button" data-id="{{id}}" onclick="handleDoneClick(event)">Post</button>
+      </div>
+      {{else}}
+      <div class="like-form">
+        <button type="submit" class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)"><i
+            class="fa-solid fa-heart"></i></button>
+        <span class="likes">{{likes}} likes</span>
+      </div>
       {{/ifCond}}
-      <form action="/like/{{id}}" method="POST" class="like-form">
-        <button type="submit" class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)">♥</button>
-        {{likes}} likes</button>
-      </form>
     </div>
     {{#if ../likeError}}
-      <p style="color: red;">{{../likeError}}"</p>
+    <p style="color: red;">{{../likeError}}"</p>
     {{/if}}
   </div>
 </div>
 
-{{#if ../loggedIn}}
 <script>
-
   async function handleLikeClick(event) {
-    const postId = event.target.getAttribute('data-id');
+    const buttonElement = event.target.closest('.like-button');
+    const postId = buttonElement.getAttribute('data-id');
 
-    // you might want to "fetch" something...
-    // Perform a fetch request to like the post
     try {
-      const response = await fetch('/like/${postId}', {
+      const response = await fetch(`/like/${postId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -49,16 +68,17 @@
 
       const result = await response.json();
 
-      if (response.success) {
+      if (response.ok) {
         // Update the like count on the page
-        const likesElement = event.target.closest('.post-status-bar').querySelector('.likes');
+        const likesElement = event.target.closest('.like-form').querySelector('.likes');
         const likesCount = parseInt(likesElement.textContent) + 1;
-        likesElement.textContent = '${likesCount} ♥';
+        likesElement.textContent = `${likesCount} likes`;
       } else {
         alert(result.message);
       }
     } catch (error) {
       console.error('Error liking the post:', error);
+      alert('An error occurred while liking the post.');
     }
   }
 
@@ -86,5 +106,148 @@
       console.error('Error deleting the post:', error);
     }
   }
+
+  function handleEditClick(event) {
+    // Hide the edit button
+    const buttonElement = event.target.closest('.edit-button');
+    buttonElement.style.display = 'none';
+
+    // Reveal the cancel and post button
+    const rightAligned = findChildElement(event.target, 'right-aligned');
+    rightAligned.style.display = 'flex';
+
+    // Get the post id
+    const postId = buttonElement.getAttribute('data-id');
+
+    // Get the title and content so we can change them to editable
+    const postElement = buttonElement.closest('.post');
+    postElement.classList.add('post-form');
+
+
+    const titleElement = postElement.querySelector('.post-title');
+    const contentElement = postElement.querySelector('.post-content-body');
+
+    // Store the original title and content
+    titleElement.dataset.originalContent = titleElement.textContent;
+    contentElement.dataset.originalContent = contentElement.textContent;
+
+    // Change title and content to inputs
+    titleElement.innerHTML = `<input type="text"
+      value="${titleElement.textContent}" required>`;
+    contentElement.innerHTML = `<textarea required>${contentElement.textContent}</textarea>`;
+
+    // Add the emoji panel
+    contentElement.innerHTML += `<div class="form-actions"
+id="form-actions-${postId}">
+        <button type="button" class="emoji-button" onclick="toggleEmojiPanel(event)">😀</button>
+      </div>`;
+
+    contentElement.innerHTML += `<div class="emoji-container" class="emoji-panel" id="emoji-container-${postId}" style="display: none;">
+      <input type="text" class="emoji-search" placeholder="Search emojis..."
+oninput="searchEmojis(event)">
+      <div class="emoji-grid"></div>
+    </div>`;
+  }
+
+  async function handleDoneClick(event) {
+    const form = findChildElement(event.target, 'post-feed-form');
+    if (!form.reportValidity()) {
+      return;
+    }
+
+    const buttonElement = event.target.closest('.done-edit-button');
+    const postId = buttonElement.getAttribute('data-id');
+
+    const postElement = buttonElement.closest('.post');
+
+    // Get the title
+    const titleInput = postElement.querySelector('.post-title input');
+    const titleElement = postElement.querySelector('.post-title');
+
+    // Get the content
+    const contentTextarea = postElement.querySelector('.post-content-body textarea');
+    const contentElement = postElement.querySelector('.post-content-body');
+
+    // Update the title, content, and timestamp
+    const updatedTitle = titleInput.value;
+    const updatedContent = contentTextarea.value;
+    const username = postElement.querySelector('.post-meta').dataset.username;
+    const timestamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+
+    try {
+      const response = await fetch(`/edit/${postId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({title: updatedTitle, content: updatedContent})
+      });
+
+      if (response.ok) {
+        // Store the new title
+        titleElement.dataset.originalContent = updatedTitle;
+        contentElement.dataset.originalContent = updatedContent;
+
+        const postMetaElement = postElement.querySelector('.post-meta');
+        postMetaElement.innerHTML = `Edited by ${username} on ${timestamp}`;
+
+        // Show the edit button and hide the cancel and post buttons
+        handleCancelClick(event);
+      } else {
+        alert('Failed to update the post.');
+      }
+    } catch (error) {
+      console.error('Error updating the post:', error);
+    }
+  }
+
+  function handleCancelClick(event) {
+    // Show the edit button
+    const editButton = findChildElement(event.target, 'edit-button');
+    if (editButton) {
+      editButton.style.display = 'inline';
+    }
+    const postId = editButton.getAttribute('data-id');
+
+    // Hide the emoji button
+    const emojiButton = findChildElement(event.target, 'emoji-button');
+    if (emojiButton) {
+      emojiButton.style.display = 'none';
+    }
+
+    // Hide the right-aligned buttons
+    const rightAligned = findChildElement(event.target, 'right-aligned');
+    if (rightAligned) {
+      rightAligned.style.display = 'none';
+    }
+
+    // Remove the emoji panel
+    const formActions = document.getElementById(`form-actions-${postId}`);
+    if (formActions) {
+      formActions.remove();
+    }
+
+    const emojiContainer = document.getElementById(`emoji-container-${postId}`);
+    if (emojiContainer) {
+      emojiContainer.remove();
+    }
+
+    // Revert the title and content back to normal
+    const postElement = editButton.closest('.post');
+    postElement.classList.remove('post-form');
+
+    const titleElement = postElement.querySelector('.post-title');
+    const contentElement = postElement.querySelector('.post-content-body');
+
+    titleElement.innerText = titleElement.dataset.originalContent;
+    contentElement.innerHTML = contentElement.dataset.originalContent;
+  }
+
+  function findChildElement(element, childClass) {
+    let parent = element.closest('.post-content');
+    if (parent) {
+      return parent.querySelector(`.${childClass}`);
+    }
+    return null;
+  }
 </script>
-{{/if}}
