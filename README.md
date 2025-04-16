@@ -38,5 +38,5 @@ A drop-down menu allows users to sort posts by recency or number of likes.
 
 ![image](https://github.com/user-attachments/assets/387aca40-d523-41e5-8846-7c9988264cdb)
 ## Profile Page
-The profile page displays only the user's own posts and provides options to manage them. Users can also permanently delete their account, which removes all the user records and posts from the database.
+The profile page displays only the user's own posts and provides options to manage them. Users can also permanently delete their account, which removes all the user's records and posts from the database.
 ![image](https://github.com/user-attachments/assets/41976e18-901f-45c5-a86e-88621244d69c)
