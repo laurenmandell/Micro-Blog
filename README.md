@@ -14,23 +14,35 @@ A microblogging platform for poets and poetry enthusiasts
 ## Home Page
 The home page dynamically updates based on login status and adapts its layout for desktop and mobile.
 ### Logged Out
+
 ![image](https://github.com/user-attachments/assets/021e202a-7286-4395-848a-abab8f71b18a)
+
 ### Logged In
 #### Desktop View
+
 ![image](https://github.com/user-attachments/assets/72aaabc3-c2b0-4518-8075-105787933219)
+
 #### Mobile View
+
 ![image](https://github.com/user-attachments/assets/5a98916e-4db6-4e37-9e2a-755b6815a710)
+
 ## Post Interaction
 PoemBlog supports core post-related functionalities, including creation, editing, deletion, liking, and sorting.
 ### Creating Posts
 Users can create a new post by entering a title and writing the body of their poem. An integrated emoji menu provides access to 200 emojis, complete with a search bar and hover labels for easier selection.
+
 ![image](https://github.com/user-attachments/assets/b5733b4b-0139-4c59-87da-9aac3170fe7a)
 ![image](https://github.com/user-attachments/assets/b8cdc69f-519f-483a-8c59-4d0dd3b13b7a)
+
 ### Managing Posts
 Users can edit the title and content of their own posts at any time. The time stamp of the post is updated to reflect the latest edit. Both editing and deletion capabilities are restricted to the original author, ensuring proper content ownership.
+
 ![image](https://github.com/user-attachments/assets/b47752ef-6f56-4579-9d85-47cddc9f3be6)
+
 ![image](https://github.com/user-attachments/assets/72af1310-67d9-4934-89e5-e733303197ed)
+
 ![image](https://github.com/user-attachments/assets/76552c5d-a5e8-4b0a-9a12-ce334fd20ef7)
+
 ### Liking Posts
 Users can like posts made by others but cannot like their own posts.
 ### Sorting Posts
